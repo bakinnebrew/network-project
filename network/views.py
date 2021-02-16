@@ -7,8 +7,12 @@ from django.urls import reverse
 from django.forms import ModelForm
 import datetime
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.core import serializers
+from django.forms.models import model_to_dict
 
-from .models import User, Post
+
+from .models import User, Post, Follower
 
 
 class CreateNewPost(ModelForm):
@@ -27,6 +31,7 @@ def index(request):
         return HttpResponseRedirect(reverse("login"))
 
 
+@ csrf_exempt
 def new_post(request):
     # Composing a new post must be via POST
     if request.method != "POST":
@@ -85,30 +90,33 @@ def posts(request, post_view):
     return JsonResponse([post.serialize() for post in posts], safe=False)
 
 
-def profile(request, username):
-    if username == request.user.username:
+def following(request, user_id):
+    if user_id == request.user.id:
+        followers = Follower.objects.filter(
+            main_user=request.user
+        )
+    else:
+        return JsonResponse({"error": "Invalid request"}, status=400)
+
+    data = serializers.serialize('json', followers)
+    return JsonResponse(data, content_type='application/json', safe=False)
+
+
+def profile(request, user_id):
+    if user_id == request.user.id:
         posts = Post.objects.filter(
             user=request.user
+        )
+
+    elif user_id != request.user.id:
+        posts = Post.objects.filter(
+            user=user_id
         )
     else:
         return JsonResponse({"error": "Invalid request"}, status=400)
 
     posts = posts.order_by("-post_time").all()
     return JsonResponse([post.serialize() for post in posts], safe=False)
-
-    # if username == request.user.username:
-    #     user = request.user.username
-    #     posts = Post.objects.filter(
-    #         user=request.user
-    #     )
-    #     posts = posts.order_by("-post_time").all()
-    #     return render(request, 'network/profile.html', {
-    #         "user": user,
-    #         "posts": posts
-    #     })
-
-    # else:
-    #     return render(request, 'network/profile.html', {"error": True})
 
 
 def login_view(request):

@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from datetime import datetime, timedelta
+from django.core import serializers
 
 
 class User(AbstractUser):
@@ -16,6 +17,7 @@ class Post(models.Model):
     def serialize(self):
         return {
             "id": self.id,
+            "author_id": self.user.id,
             "author": self.user.username,
             "content": self.post_content,
             "timestamp": self.post_time.strftime("%b %-d %Y, %-I:%M %p")
@@ -24,7 +26,14 @@ class Post(models.Model):
 
 class Follower(models.Model):
     main_user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="users")
+        "User", on_delete=models.CASCADE, related_name="users")
     followers = models.ManyToManyField(
-        User, blank=True, related_name="following"
+        "User", blank=True, related_name="following"
     )
+
+    def as_json(self):
+        return dict(
+            follower_id=self.id,
+            main_user=self.main_user,
+            followers=self.followers
+        )
