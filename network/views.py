@@ -9,8 +9,6 @@ import datetime
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core import serializers
-from django.forms.models import model_to_dict
-
 
 from .models import User, Post, Follower
 
@@ -20,6 +18,23 @@ class CreateNewPost(ModelForm):
         model = Post
         fields = ['post_content']
         exclude = ['user', 'post_time']
+
+
+# class UserSerializer(serializers.ModelSerializer):
+#     username = serializers.CharField(max_length=100)
+
+#     class Meta:
+#         model = User
+#         fields = ('username')
+
+
+# class FindFollowers(serializers.ModelSerializer):
+#     followers = UserSerializer(many=True)
+#     main_user = serializers.CharField(max_length=200)
+
+#     class Meta:
+#         model = Follower
+#         fields = ('main_user', 'followers')
 
 
 def index(request):
