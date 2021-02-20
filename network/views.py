@@ -1,4 +1,5 @@
 import json
+from django.core import serializers
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
@@ -8,7 +9,6 @@ from django.forms import ModelForm
 import datetime
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.core import serializers
 
 from .models import User, Post, Follower
 
@@ -107,14 +107,11 @@ def posts(request, post_view):
 
 def following(request, user_id):
     if user_id == request.user.id:
-        followers = Follower.objects.filter(
-            main_user=request.user
-        )
+        followers = Follower.objects.filter(pk=user_id)
     else:
         return JsonResponse({"error": "Invalid request"}, status=400)
 
-    data = serializers.serialize('json', followers)
-    return JsonResponse(data, content_type='application/json', safe=False)
+    return JsonResponse([follower.serialize() for follower in followers], safe=False)
 
 
 def profile(request, user_id):

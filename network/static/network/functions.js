@@ -3,16 +3,27 @@ document.addEventListener('DOMContentLoaded', function() {
   // Use buttons to toggle between views
   document.querySelector('#profile-page').addEventListener('click', () => load_profile);
   document.querySelector('#all-posts').addEventListener('click', () => load_posts('all_posts'));
-  document.querySelector('#following').addEventListener('click', () => load_following('2'));
+  document.querySelector('#following').addEventListener('click', () => load_following('1'));
   document.querySelector('#new-post').addEventListener('click', compose_new_post);
   document.querySelector('#create-post-form').addEventListener("submit", submit_post);
+  // document.querySelector('#follow').addEventListener("submit", follow_person('1'));
   
   load_posts('all_posts');
 });
 
-// // function submit_post() {
 
-// // }
+
+// function follow_person(id){
+//   fetch('/follow', {
+//     method: 'POST'
+    
+// })
+// .then(response => response.json())
+//   .then(result => {
+//         console.log(result);
+//       });
+//   };
+
 function compose_new_post() {
 
   // Show compose view and hide other views
@@ -49,11 +60,16 @@ fetch(`/following/${id}`)
     .then(followers=> {
           console.log(followers);
 
+    followers.forEach(followers => {
       const follower_name = document.createElement('div');
-      follower_name.innerHTML = followers.id
+      const follower_id = followers.id
+      follower_name.innerHTML = followers.follower
+      follower_name.addEventListener('click', function() {
+        load_profile(follower_id);
+    });
       document.querySelector('#following-view').append(follower_name);
       });
-
+    });
 }
 
 

@@ -26,14 +26,14 @@ class Post(models.Model):
 
 class Follower(models.Model):
     main_user = models.ForeignKey(
-        "User", on_delete=models.CASCADE, related_name="users")
+        "User", on_delete=models.CASCADE, related_name="followed")
     followers = models.ManyToManyField(
-        "User", blank=True, related_name="following"
+        "User", blank=True, related_name="follower"
     )
 
-    def as_json(self):
-        return dict(
-            follower_id=self.id,
-            main_user=self.main_user,
-            followers=self.followers
-        )
+    def serialize(self):
+        return {
+            "id": self.id,
+            "main_user_id": self.main_user.username,
+            "follower": [user.username for user in self.followers.all()],
+        }
