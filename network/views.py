@@ -20,23 +20,6 @@ class CreateNewPost(ModelForm):
         exclude = ['user', 'post_time']
 
 
-# class UserSerializer(serializers.ModelSerializer):
-#     username = serializers.CharField(max_length=100)
-
-#     class Meta:
-#         model = User
-#         fields = ('username')
-
-
-# class FindFollowers(serializers.ModelSerializer):
-#     followers = UserSerializer(many=True)
-#     main_user = serializers.CharField(max_length=200)
-
-#     class Meta:
-#         model = Follower
-#         fields = ('main_user', 'followers')
-
-
 def index(request):
     if request.user.is_authenticated:
         return render(request, "network/main_page.html")
@@ -65,30 +48,6 @@ def new_post(request):
 
     return JsonResponse({"message": "Post submitted successfully."}, status=201)
 
-    # if request.method == "POST":
-    #     user = User.objects.get(username=request.user)
-    #     form = CreateNewPost(request.POST, request.FILES)
-    #     if form.is_valid:
-    #         post = form.save(commit=False)
-    #         post.user = user
-    #         post.post_time = datetime.datetime.now()
-    #         post.save()
-    #     return redirect('index')
-    # else:
-    #     return render(request, "network/post.html", {
-    #         "form": CreateNewPost()
-    #     })
-
-
-# def profile(request, username):
-#     if username == request.user:
-#         user = Post.objects.filter(
-#             user=request.user
-#         )
-#         return JsonResponse([post.serialize() for post in posts], safe=False)
-#     else:
-#         return JsonResponse({"error": "Invalid request"}, status=400)
-
 
 def posts(request, post_view):
     if post_view == "all_posts":
@@ -105,13 +64,75 @@ def posts(request, post_view):
     return JsonResponse([post.serialize() for post in posts], safe=False)
 
 
-def following(request, user_id):
-    if user_id == request.user.id:
-        followers = Follower.objects.filter(pk=user_id)
-    else:
-        return JsonResponse({"error": "Invalid request"}, status=400)
+def single_post(request, post_id):
+    # Query for requested single post
+    try:
+        post = Post.objects.get(pk=post_id)
+    except Post.DoesNotExist:
+        return JsonResponse({"error": "Post not found."}, status=404)
 
-    return JsonResponse([follower.serialize() for follower in followers], safe=False)
+ # Return Single Post contents
+    if request.method == "GET":
+        return JsonResponse(post.serialize())
+
+# Provides error if request is not GET
+    else:
+        return JsonResponse({
+            "error": "GET request required"
+        }, status=400)
+
+
+def following(request, user_id):
+    if request.method == "GET":
+        following = Follower.objects.filter(pk=user_id)
+        return JsonResponse([follower.serialize() for follower in following], safe=False)
+
+# def following(request, user_id):
+#     if user_id == request.user.id:
+#         following = Follower.objects.filter(pk=user_id)
+#     else:
+#         return JsonResponse({"error": "Invalid request"}, status=400)
+
+#     return JsonResponse([follower.serialize() for follower in following], safe=False)
+
+
+# def user_data(request):
+#     if request.user:
+#         user_data = User.objects.get(user=request.user)
+#         return JsonResponse(user_data.serialize(), safe=False)
+
+
+@csrf_exempt
+def follow(request, user_id):
+    if request.method == "POST":
+        if request.user.username:
+            to_follow = User.objects.get(pk=user_id)
+            currently_following = Follower.objects.get(
+                main_user_id=request.user)
+            if to_follow in currently_following.following.all():
+                return JsonResponse({"error": "Invalid request"}, status=400)
+            else:
+                user = User.objects.get(username=request.user)
+                following = Follower()
+                try:
+                    currently_following.following.add(to_follow)
+                    currently_following.save()
+                except:
+                    following.main_user = user
+                    following.save()
+                    following.following.add(to_follow)
+                    following.save()
+                    return JsonResponse({"Success": "You are now following this user"}, status=200)
+
+
+@csrf_exempt
+def like_post(request, post_id):
+    if request.method == "POST":
+        if request.user.username:
+            liked_post = Post.objects.get(pk=post_id)
+            liked_post.likes = liked_post.likes + 1
+            liked_post.save()
+            return JsonResponse({"Success": "This post has been liked by you"}, status=200)
 
 
 def profile(request, user_id):
