@@ -9,6 +9,9 @@ from django.forms import ModelForm
 import datetime
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator
+from django.views.generic import ListView
+from django.db.models import Count
 
 from .models import User, Post, Follower
 
@@ -18,6 +21,11 @@ class CreateNewPost(ModelForm):
         model = Post
         fields = ['post_content']
         exclude = ['user', 'post_time']
+
+
+class PostList(ListView):
+    paginate_by = 10
+    model = Post
 
 
 def index(request):
@@ -150,6 +158,9 @@ def profile(request, user_id):
         posts = Post.objects.filter(
             user=request.user
         )
+        currently_following = Follower.objects.get(
+            main_user=request.user).following.all()
+        print(len(currently_following))
 
     elif user_id != request.user.id:
         posts = Post.objects.filter(
@@ -159,7 +170,7 @@ def profile(request, user_id):
         return JsonResponse({"error": "Invalid request"}, status=400)
 
     posts = posts.order_by("-post_time").all()
-    return JsonResponse([post.serialize() for post in posts], safe=False)
+    return JsonResponse([post.serialize() for post in posts], safe=False,)
 
 
 def login_view(request):

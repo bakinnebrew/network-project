@@ -27,8 +27,26 @@ fetch(`/following/${id}`)
   .then(response => response.json())
   .then(posts => {
     console.log(posts);
+    posts.forEach(posts => {
+    const post_author = document.createElement('div');
+    const post_content = document.createElement('div');
+    const post_time = document.createElement('div');
+    const post_likes = document.createElement('div');
+    post_id = posts.id;
+    post_author.innerHTML = posts.author;
+    post_content.innerHTML = posts.content;
+    post_time.innerHTML = posts.timestamp;
+    post_likes.innerHTML = posts.likes;
+    document.querySelector('#following-view').append(post_author);
+    document.querySelector('#following-view').append(post_content);
+    document.querySelector('#following-view').append(post_time);
+    document.querySelector('#following-view').append(post_likes);
   });
+
+  });
+  
 };
+
 function view_post(id){
 document.querySelector('#posts-view').style.display = 'none';
 document.querySelector('#new-post-view').style.display = 'none';
@@ -54,7 +72,7 @@ fetch(`/single_post/${id}`)
     document.querySelector('#single-post-view').append(post_time);
     document.querySelector('#single-post-view').append(post_likes);
 });
-document.querySelector('#like').addEventListener('click', () => like_post(post_id));
+  document.querySelector('#like').addEventListener('click', () => like_post(post_id));
 };
 
 function follow_person(id){
@@ -74,7 +92,7 @@ function like_post(id){
     body: JSON.stringify({
       post_id: post_id,
     })
-  });
+  })
 };
 
 function compose_new_post() {
