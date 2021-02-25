@@ -82,11 +82,27 @@ def single_post(request, post_id):
         }, status=400)
 
 
-def following(request, user_id):
+def following_users(request, user_id):
     if request.method == "GET":
         following = Follower.objects.filter(pk=user_id)
         return JsonResponse([follower.serialize() for follower in following], safe=False)
 
+
+def following(request, user_id):
+    if user_id == request.user.id:
+        currently_following = Follower.objects.get(
+            main_user=request.user).following.all()
+        posts = Post.objects.filter(user__in=currently_following)
+
+        # for currently_following_user in currently_following.following.all():
+        #     posts = Post.objects.get(
+        #         user__in=currently_following_user)
+
+        # display posts only if the poster is a following user in the Follower model
+        # else:
+        #     return JsonResponse({"error": "Invalid request"}, status=400)
+        # posts = posts.order_by("-post_time").all()
+        return JsonResponse([post.serialize() for post in posts], safe=False)
 # def following(request, user_id):
 #     if user_id == request.user.id:
 #         following = Follower.objects.filter(pk=user_id)
@@ -94,12 +110,6 @@ def following(request, user_id):
 #         return JsonResponse({"error": "Invalid request"}, status=400)
 
 #     return JsonResponse([follower.serialize() for follower in following], safe=False)
-
-
-# def user_data(request):
-#     if request.user:
-#         user_data = User.objects.get(user=request.user)
-#         return JsonResponse(user_data.serialize(), safe=False)
 
 
 @csrf_exempt

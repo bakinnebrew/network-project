@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Use buttons to toggle between views
   document.querySelector('#profile-page').addEventListener('click', () => load_profile('4', 'harry'));
   document.querySelector('#all-posts').addEventListener('click', () => load_posts('all_posts'));
-  document.querySelector('#following').addEventListener('click', () => load_following('1'));
+  document.querySelector('#following').addEventListener('click', () => following_posts('1'));
   document.querySelector('#new-post').addEventListener('click', compose_new_post);
   
   load_posts('all_posts');
@@ -23,8 +23,12 @@ document.querySelector('#profile-view').style.display = 'none';
 document.querySelector('#following-view').style.display = 'block';
 document.querySelector('#single-post-view').style.display = 'none';
 
-fetch(`following`)//create view to display all posts that the logged in user follows
-}
+fetch(`/following/${id}`)
+  .then(response => response.json())
+  .then(posts => {
+    console.log(posts);
+  });
+};
 function view_post(id){
 document.querySelector('#posts-view').style.display = 'none';
 document.querySelector('#new-post-view').style.display = 'none';
