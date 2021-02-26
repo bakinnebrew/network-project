@@ -61,14 +61,31 @@ def posts(request, post_view):
     if post_view == "all_posts":
         posts = Post.objects.all()
 
-    elif post_view == "profile":
-        posts = Post.objects.filter(
-            user=request.user
-        )
     else:
         return JsonResponse({"error": "Invalid request"}, status=400)
 
     posts = posts.order_by("-post_time").all()
+    return JsonResponse([post.serialize() for post in posts], safe=False)
+
+
+def build_posts(request, post_view):
+
+    if post_view == "following":
+        currently_following = Follower.objects.get(
+            main_user=request.user).following.all()
+        posts = Post.objects.filter(user__in=currently_following)
+
+    elif post_view == "profile":
+        posts = Post.objects.filter(
+            user=request.user
+        )
+        currently_following = Follower.objects.get(
+            main_user=request.user).following.all()
+        print(len(currently_following))
+
+    else:
+        posts = Post.objects.all()
+
     return JsonResponse([post.serialize() for post in posts], safe=False)
 
 
@@ -102,22 +119,7 @@ def following(request, user_id):
             main_user=request.user).following.all()
         posts = Post.objects.filter(user__in=currently_following)
 
-        # for currently_following_user in currently_following.following.all():
-        #     posts = Post.objects.get(
-        #         user__in=currently_following_user)
-
-        # display posts only if the poster is a following user in the Follower model
-        # else:
-        #     return JsonResponse({"error": "Invalid request"}, status=400)
-        # posts = posts.order_by("-post_time").all()
         return JsonResponse([post.serialize() for post in posts], safe=False)
-# def following(request, user_id):
-#     if user_id == request.user.id:
-#         following = Follower.objects.filter(pk=user_id)
-#     else:
-#         return JsonResponse({"error": "Invalid request"}, status=400)
-
-#     return JsonResponse([follower.serialize() for follower in following], safe=False)
 
 
 @csrf_exempt

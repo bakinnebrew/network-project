@@ -8,44 +8,14 @@ document.addEventListener('DOMContentLoaded', function() {
 //       });
 //     };
   // Use buttons to toggle between views
-  document.querySelector('#profile-page').addEventListener('click', () => load_profile('4', 'harry'));
-  document.querySelector('#all-posts').addEventListener('click', () => load_posts('all_posts'));
-  document.querySelector('#following').addEventListener('click', () => following_posts('1'));
+  document.querySelector('#profile-page').addEventListener('click', () => build_posts('profile'));
+  document.querySelector('#all-posts').addEventListener('click', () => build_posts('all_posts'));
+  document.querySelector('#following').addEventListener('click', () => build_posts('following'));
   document.querySelector('#new-post').addEventListener('click', compose_new_post);
   
-  load_posts('all_posts');
+  build_posts('all_posts');
 });
 
-function following_posts(id){
-document.querySelector('#posts-view').style.display = 'none';
-document.querySelector('#new-post-view').style.display = 'none';
-document.querySelector('#profile-view').style.display = 'none';
-document.querySelector('#following-view').style.display = 'block';
-document.querySelector('#single-post-view').style.display = 'none';
-
-fetch(`/following/${id}`)
-  .then(response => response.json())
-  .then(posts => {
-    console.log(posts);
-    posts.forEach(posts => {
-    const post_author = document.createElement('div');
-    const post_content = document.createElement('div');
-    const post_time = document.createElement('div');
-    const post_likes = document.createElement('div');
-    post_id = posts.id;
-    post_author.innerHTML = posts.author;
-    post_content.innerHTML = posts.content;
-    post_time.innerHTML = posts.timestamp;
-    post_likes.innerHTML = posts.likes;
-    document.querySelector('#following-view').append(post_author);
-    document.querySelector('#following-view').append(post_content);
-    document.querySelector('#following-view').append(post_time);
-    document.querySelector('#following-view').append(post_likes);
-  });
-
-  });
-  
-};
 
 function view_post(id){
 document.querySelector('#posts-view').style.display = 'none';
@@ -158,7 +128,7 @@ fetch(`/following_users/${id}`)
 }
 
 
-function load_profile(id, username) {
+function load_following_user_profile(id, username) { //TODO
 
 document.querySelector('#posts-view').style.display = 'none';
 document.querySelector('#new-post-view').style.display = 'none';
@@ -201,29 +171,31 @@ fetch(`/profile/${id}`)
 
 };
 
-
-
-function load_posts(post_view){
-
-document.querySelector('#posts-view').style.display = 'block';
+function load_user_profile(){
+document.querySelector('#posts-view').style.display = 'none';
 document.querySelector('#new-post-view').style.display = 'none';
-document.querySelector('#profile-view').style.display = 'none';
-document.querySelector('#following-view').style.display = 'none';
 document.querySelector('#single-post-view').style.display = 'none';
+document.querySelector('#profile-view').style.display = 'block';
+document.querySelector('#following-view').style.display = 'none';
+document.querySelector('#following-users-view').style.display = 'none';
 
-fetch(`/posts/${post_view}`)
-     .then(response => response.json())
-     .then(posts => { 
-       console.log(posts);
-     
-     posts.forEach(posts => {
+    };
+
+function build_posts(post_view){
+  
+  fetch(`/build_posts/${post_view}`)
+    .then(response => response.json())
+    .then(posts => {
+      console.log(posts);
+
+      posts.forEach(posts=> {
          const post_author = document.createElement('div');
          const post_content = document.createElement('div');
          const post_time = document.createElement('div');
          const post_likes = document.createElement('div');
          const post_id = posts.id;
-         const post_author_id = posts.author_id;
          const post_author_username = posts.author;
+         const post_author_id = posts.author_id;
          post_author.innerHTML = posts.author;
          post_likes.innerHTML = `Likes: ${posts.likes}`;
          post_author.addEventListener('click', function() {
@@ -234,14 +206,46 @@ fetch(`/posts/${post_view}`)
           view_post(post_id)
          });
          post_time.innerHTML = posts.timestamp;
-         
-         document.querySelector('#posts-view').append(post_author);
-         document.querySelector('#posts-view').append(post_content);
-         document.querySelector('#posts-view').append(post_time);
-         document.querySelector('#posts-view').append(post_likes);
-        
-     });
-    })
-  };
+      
+      if(post_view == "following"){
+        document.querySelector('#posts-view').style.display = 'none';
+        document.querySelector('#new-post-view').style.display = 'none';
+        document.querySelector('#profile-view').style.display = 'none';
+        document.querySelector('#following-view').style.display = 'block';
+        document.querySelector('#single-post-view').style.display = 'none';
+        document.querySelector('#following-users-profile-view').style.display = 'none';
+        document.querySelector('#following-view').append(post_author_username);
+        document.querySelector('#following-view').append(post_content);
+        document.querySelector('#following-view').append(post_time);
+        document.querySelector('#following-view').append(post_likes);
+      }
+      else if(post_view == "profile"){
+        document.querySelector('#posts-view').style.display = 'none';
+        document.querySelector('#new-post-view').style.display = 'none';
+        document.querySelector('#single-post-view').style.display = 'none';
+        document.querySelector('#profile-view').style.display = 'block';
+        document.querySelector('#following-users-profile-view').style.display = 'none';
+        document.querySelector('#following-view').style.display = 'none';
+        document.querySelector('#following-users-view').style.display = 'none';
 
-
+        // create header for profile
+        document.querySelector('#profile-view').append(post_author_username);
+        document.querySelector('#profile-view').append(post_content);
+        document.querySelector('#profile-view').append(post_time);
+        document.querySelector('#profile-view').append(post_likes);
+      }
+      else {
+        document.querySelector('#posts-view').style.display = 'block';
+        document.querySelector('#new-post-view').style.display = 'none';
+        document.querySelector('#profile-view').style.display = 'none';
+        document.querySelector('#following-view').style.display = 'none';
+        document.querySelector('#single-post-view').style.display = 'none';
+        document.querySelector('#following-users-profile-view').style.display = 'none';
+        document.querySelector('#posts-view').append(post_author_username);
+        document.querySelector('#posts-view').append(post_content);
+        document.querySelector('#posts-view').append(post_time);
+        document.querySelector('#posts-view').append(post_likes);
+      }
+    });
+  });
+}
