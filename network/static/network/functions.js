@@ -1,13 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-  //collects current user data for nav funnctions
-// function user_data(){
-//   fetch(`user_data/`)
-//   .then(response => response.json())
-//   .then(user_data=> {
-//           console.log(user_data)
-//       });
-//     };
-  // Use buttons to toggle between views
+
   document.querySelector('#profile-page').addEventListener('click', () => build_posts('profile'));
   document.querySelector('#all-posts').addEventListener('click', () => build_posts('all_posts'));
   document.querySelector('#following').addEventListener('click', () => build_posts('following'));
@@ -22,6 +14,7 @@ document.querySelector('#posts-view').style.display = 'none';
 document.querySelector('#new-post-view').style.display = 'none';
 document.querySelector('#profile-view').style.display = 'none';
 document.querySelector('#following-view').style.display = 'none';
+document.querySelector('#other-users-profile-view').style.display = 'none';
 document.querySelector('#single-post-view').style.display = 'block';
 
 fetch(`/single_post/${id}`)
@@ -45,14 +38,16 @@ fetch(`/single_post/${id}`)
   document.querySelector('#like').addEventListener('click', () => like_post(post_id));
 };
 
-function follow_person(id){
+function follow_unfollow_person(id, follow_or_unfollow){
   const following_id = id;
-  fetch(`/follow/${id}`, {
+  const action = follow_or_unfollow;
+  fetch(`/follow_unfollow/${id}/${follow_or_unfollow}`, {
     method: 'POST',
     body: JSON.stringify({ 
       user_id: following_id,
+      action: action,
     })   
-});
+  });
 };
 
 function like_post(id){
@@ -72,6 +67,7 @@ function compose_new_post() {
   document.querySelector('#following-view').style.display = 'none';
   document.querySelector('#new-post-view').style.display = 'block';
   document.querySelector('#profile-view').style.display = 'none';
+  document.querySelector('#other-users-profile-view').style.display = 'none';
   document.querySelector('#single-post-view').style.display = 'none';
   // Clear out composition fields
   document.querySelector('#compose-body').value = '';
@@ -93,17 +89,19 @@ function submit_post(){
   };
   
 function load_following_users(id){
+document.querySelector('#following-users-view').style.display = 'block';
 document.querySelector('#posts-view').style.display = 'none';
 document.querySelector('#new-post-view').style.display = 'none';
 document.querySelector('#profile-view').style.display = 'none';
 document.querySelector('#single-post-view').style.display = 'none';
 document.querySelector('#following-view').style.display = 'none';
-document.querySelector('#following-users-view').style.display = 'block';
+document.querySelector('#other-users-profile-view').style.display = 'none';
+
 
 fetch(`/following_users/${id}`)
     .then(response => response.json())
     .then(following=> {
-          console.log(following);
+        console.log(following);
     
     if(following == 0 ){
       const load_following_error = document.createElement('div');
@@ -112,36 +110,38 @@ fetch(`/following_users/${id}`)
 
     }
 //loops through JSON object array "following", displaying each person the user is following. 
-    following.forEach(following => {
-      const following_names = following.following;
-      following_names.forEach(following_names => {
-      const following_name = document.createElement('div');
-      following_name.innerHTML = following_names;
-      following_name.addEventListener('click', function() {
-        load_profile(following_names_id, following_names);
-      })
-    
-      document.querySelector('#following-users-view').append(following_name);
+      following.forEach(following => {
+        const following_names = following.following;
+        following_names.forEach(following_names => {
+        const following_name = document.createElement('div');
+        following_name.innerHTML = following_names;
+        following_name.addEventListener('click', function() {
+          load_following_user_profile(following_names_id, following_names);
+        })
+      
+        document.querySelector('#following-users-view').append(following_name);
+          });
         });
       });
-    });
 }
 
 
-function load_following_user_profile(id, username) { //TODO
+function load_other_user_profile(id, username) { 
 
 document.querySelector('#posts-view').style.display = 'none';
 document.querySelector('#new-post-view').style.display = 'none';
 document.querySelector('#single-post-view').style.display = 'none';
-document.querySelector('#profile-view').style.display = 'block';
 document.querySelector('#following-view').style.display = 'none';
 document.querySelector('#following-users-view').style.display = 'none';
+document.querySelector('#other-users-profile-view').style.display = 'block';
 
 const profile_header = document.createElement('h1');
-    profile_header.innerHTML = username;
-    document.querySelector('#profile-view').append(profile_header);
+profile_header.innerHTML = username.innerHTML;
+document.querySelector('#other-users-profile-view').append(profile_header);
 
-fetch(`/profile/${id}`)
+
+
+fetch(`/other_users_profile/${id}`)
     .then(response => response.json())
     .then(posts=> {
           console.log(posts);
@@ -160,26 +160,17 @@ fetch(`/profile/${id}`)
       })
       post_time.innerHTML = posts.timestamp;
       post_likes.innerHTML = posts.likes;
-      document.querySelector('#profile-view').append(post_author);
-      document.querySelector('#profile-view').append(post_content);
-      document.querySelector('#profile-view').append(post_time);
-      document.querySelector('#profile-view').append(post_likes);
+      document.querySelector('#other-users-profile-view').append(post_author);
+      document.querySelector('#other-users-profile-view').append(post_content);
+      document.querySelector('#other-users-profile-view').append(post_time);
+      document.querySelector('#other-users-profile-view').append(post_likes);
       });
     });
-    document.querySelector('#follow').addEventListener('click', () => follow_person(author_id));
-    document.querySelector('#following-users').addEventListener('click', () => load_following_users(author_id));
+    document.querySelector('#follow').addEventListener('click', () => follow_unfollow_person(author_id, 'follow'));
+    document.querySelector('#unfollow').addEventListener('click', () => follow_unfollow_person(author_id, 'unfollow'));
+    document.querySelector('#following-users').addEventListener("submit", () => load_following_users(author_id));
 
 };
-
-function load_user_profile(){
-document.querySelector('#posts-view').style.display = 'none';
-document.querySelector('#new-post-view').style.display = 'none';
-document.querySelector('#single-post-view').style.display = 'none';
-document.querySelector('#profile-view').style.display = 'block';
-document.querySelector('#following-view').style.display = 'none';
-document.querySelector('#following-users-view').style.display = 'none';
-
-    };
 
 function build_posts(post_view){
   
@@ -189,17 +180,16 @@ function build_posts(post_view){
       console.log(posts);
 
       posts.forEach(posts=> {
-         const post_author = document.createElement('div');
+         const post_author_username = document.createElement('div');
          const post_content = document.createElement('div');
          const post_time = document.createElement('div');
          const post_likes = document.createElement('div');
          const post_id = posts.id;
-         const post_author_username = posts.author;
+         post_author_username.innerHTML = posts.author;
          const post_author_id = posts.author_id;
-         post_author.innerHTML = posts.author;
          post_likes.innerHTML = `Likes: ${posts.likes}`;
-         post_author.addEventListener('click', function() {
-          load_profile(post_author_id, post_author_username);
+         post_author_username.addEventListener('click', function() {
+          load_other_user_profile(post_author_id, post_author_username);
           });
          post_content.innerHTML = posts.content;
          post_content.addEventListener('click', function() {
@@ -213,7 +203,8 @@ function build_posts(post_view){
         document.querySelector('#profile-view').style.display = 'none';
         document.querySelector('#following-view').style.display = 'block';
         document.querySelector('#single-post-view').style.display = 'none';
-        document.querySelector('#following-users-profile-view').style.display = 'none';
+        document.querySelector('#following-users-view').style.display = 'none';
+        document.querySelector('#other-users-profile-view').style.display = 'none';
         document.querySelector('#following-view').append(post_author_username);
         document.querySelector('#following-view').append(post_content);
         document.querySelector('#following-view').append(post_time);
@@ -221,26 +212,27 @@ function build_posts(post_view){
       }
       else if(post_view == "profile"){
         document.querySelector('#posts-view').style.display = 'none';
+        document.querySelector('#follow-button-view').style.display = 'none';
         document.querySelector('#new-post-view').style.display = 'none';
         document.querySelector('#single-post-view').style.display = 'none';
         document.querySelector('#profile-view').style.display = 'block';
-        document.querySelector('#following-users-profile-view').style.display = 'none';
+        document.querySelector('#other-users-profile-view').style.display = 'none';
         document.querySelector('#following-view').style.display = 'none';
         document.querySelector('#following-users-view').style.display = 'none';
 
-        // create header for profile
+        document.querySelector('#profile-header').innerHTML = (post_author_username).innerHTML;
         document.querySelector('#profile-view').append(post_author_username);
         document.querySelector('#profile-view').append(post_content);
         document.querySelector('#profile-view').append(post_time);
         document.querySelector('#profile-view').append(post_likes);
       }
       else {
+        document.querySelector('#other-users-profile-view').style.display = 'none';
         document.querySelector('#posts-view').style.display = 'block';
         document.querySelector('#new-post-view').style.display = 'none';
         document.querySelector('#profile-view').style.display = 'none';
         document.querySelector('#following-view').style.display = 'none';
         document.querySelector('#single-post-view').style.display = 'none';
-        document.querySelector('#following-users-profile-view').style.display = 'none';
         document.querySelector('#posts-view').append(post_author_username);
         document.querySelector('#posts-view').append(post_content);
         document.querySelector('#posts-view').append(post_time);

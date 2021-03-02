@@ -23,14 +23,14 @@ class CreateNewPost(ModelForm):
         exclude = ['user', 'post_time']
 
 
-class PostList(ListView):
-    paginate_by = 10
-    model = Post
+# class PostList(ListView):
+#     paginate_by = 10
+#     model = Post
 
 
 def index(request):
     if request.user.is_authenticated:
-        return render(request, "network/main_page.html")
+        return render(request, "network/index.html")
 
     # Everyone else is prompted to sign in
     else:
@@ -57,19 +57,8 @@ def new_post(request):
     return JsonResponse({"message": "Post submitted successfully."}, status=201)
 
 
-def posts(request, post_view):
-    if post_view == "all_posts":
-        posts = Post.objects.all()
-
-    else:
-        return JsonResponse({"error": "Invalid request"}, status=400)
-
-    posts = posts.order_by("-post_time").all()
-    return JsonResponse([post.serialize() for post in posts], safe=False)
-
-
 def build_posts(request, post_view):
-
+    # builds posts depending on view
     if post_view == "following":
         currently_following = Follower.objects.get(
             main_user=request.user).following.all()
@@ -86,6 +75,7 @@ def build_posts(request, post_view):
     else:
         posts = Post.objects.all()
 
+    posts = posts.order_by("-post_time").all()
     return JsonResponse([post.serialize() for post in posts], safe=False)
 
 
@@ -108,6 +98,9 @@ def single_post(request, post_id):
 
 
 def following_users(request, user_id):
+
+    # displays list of usernames that the user selected is following
+
     if request.method == "GET":
         following = Follower.objects.filter(pk=user_id)
         return JsonResponse([follower.serialize() for follower in following], safe=False)
@@ -123,26 +116,34 @@ def following(request, user_id):
 
 
 @csrf_exempt
-def follow(request, user_id):
+def follow_unfollow(request, user_id, action):
     if request.method == "POST":
-        if request.user.username:
+        if action == "follow":
+            if request.user.username:
+                to_follow = User.objects.get(pk=user_id)
+                currently_following = Follower.objects.get(
+                    main_user_id=request.user)
+                if to_follow in currently_following.following.all():
+                    return JsonResponse({"error": "Invalid request"}, status=400)
+                else:
+                    user = User.objects.get(username=request.user)
+                    following = Follower()
+                    try:
+                        currently_following.following.add(to_follow)
+                        currently_following.save()
+                    except:
+                        following.main_user = user
+                        following.save()
+                        following.following.add(to_follow)
+                        following.save()
+                        return JsonResponse({"Success": "You are now following this user"}, status=200)
+        if action == "unfollow":
             to_follow = User.objects.get(pk=user_id)
             currently_following = Follower.objects.get(
                 main_user_id=request.user)
-            if to_follow in currently_following.following.all():
-                return JsonResponse({"error": "Invalid request"}, status=400)
-            else:
-                user = User.objects.get(username=request.user)
-                following = Follower()
-                try:
-                    currently_following.following.add(to_follow)
-                    currently_following.save()
-                except:
-                    following.main_user = user
-                    following.save()
-                    following.following.add(to_follow)
-                    following.save()
-                    return JsonResponse({"Success": "You are now following this user"}, status=200)
+            currently_following.following.remove(to_follow)
+            currently_following.save()
+            return JsonResponse({"Success": "You are no longer following this user"}, status=200)
 
 
 @csrf_exempt
@@ -155,19 +156,28 @@ def like_post(request, post_id):
             return JsonResponse({"Success": "This post has been liked by you"}, status=200)
 
 
-def profile(request, user_id):
+def other_users_profile(request, user_id):
+
+    # displays posts of any other user selected.
+    # TODO: make condition if the user selected is you.
+    # TODO: have count of following people.
+
     if user_id == request.user.id:
-        posts = Post.objects.filter(
-            user=request.user
-        )
-        currently_following = Follower.objects.get(
-            main_user=request.user).following.all()
-        print(len(currently_following))
+        # posts = Post.objects.filter(
+        #     user=request.user
+        # )
+        # currently_following = Follower.objects.get(
+        #     main_user=request.user).following.all()
+        # print(len(currently_following))
+        post_view = "profile"
+
+        return build_posts(request, post_view)
 
     elif user_id != request.user.id:
         posts = Post.objects.filter(
             user=user_id
         )
+
     else:
         return JsonResponse({"error": "Invalid request"}, status=400)
 
