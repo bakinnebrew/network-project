@@ -58,7 +58,7 @@ def new_post(request):
 
 
 def build_posts(request, post_view):
-    # builds posts depending on view
+    # builds posts depending on view (make this a util I think)
     if post_view == "following":
         currently_following = Follower.objects.get(
             main_user=request.user).following.all()
@@ -77,6 +77,12 @@ def build_posts(request, post_view):
 
     posts = posts.order_by("-post_time").all()
     return JsonResponse([post.serialize() for post in posts], safe=False)
+
+
+def profile(request, username):
+    if request.user.username == username:
+
+        return render(request, "network/profile.html")
 
 
 def single_post(request, post_id):
@@ -163,12 +169,7 @@ def other_users_profile(request, user_id):
     # TODO: have count of following people.
 
     if user_id == request.user.id:
-        # posts = Post.objects.filter(
-        #     user=request.user
-        # )
-        # currently_following = Follower.objects.get(
-        #     main_user=request.user).following.all()
-        # print(len(currently_following))
+
         post_view = "profile"
 
         return build_posts(request, post_view)

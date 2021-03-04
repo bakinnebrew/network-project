@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
 
-  document.querySelector('#profile-page').addEventListener('click', () => build_posts('profile'));
+  document.querySelector('#profile-page').addEventListener('click', () => load_profile());
   document.querySelector('#all-posts').addEventListener('click', () => build_posts('all_posts'));
   document.querySelector('#following').addEventListener('click', () => build_posts('following'));
   document.querySelector('#new-post').addEventListener('click', compose_new_post);
@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
 function view_post(id){
 document.querySelector('#posts-view').style.display = 'none';
 document.querySelector('#new-post-view').style.display = 'none';
-document.querySelector('#profile-view').style.display = 'none';
 document.querySelector('#following-view').style.display = 'none';
 document.querySelector('#other-users-profile-view').style.display = 'none';
 document.querySelector('#single-post-view').style.display = 'block';
@@ -66,7 +65,6 @@ function compose_new_post() {
   document.querySelector('#posts-view').style.display = 'none';
   document.querySelector('#following-view').style.display = 'none';
   document.querySelector('#new-post-view').style.display = 'block';
-  document.querySelector('#profile-view').style.display = 'none';
   document.querySelector('#other-users-profile-view').style.display = 'none';
   document.querySelector('#single-post-view').style.display = 'none';
   // Clear out composition fields
@@ -92,7 +90,6 @@ function load_following_users(id){
 document.querySelector('#following-users-view').style.display = 'block';
 document.querySelector('#posts-view').style.display = 'none';
 document.querySelector('#new-post-view').style.display = 'none';
-document.querySelector('#profile-view').style.display = 'none';
 document.querySelector('#single-post-view').style.display = 'none';
 document.querySelector('#following-view').style.display = 'none';
 document.querySelector('#other-users-profile-view').style.display = 'none';
@@ -172,6 +169,10 @@ fetch(`/other_users_profile/${id}`)
 
 };
 
+function load_profile(){
+  document.addEventListener('DOMContentLoaded', () => build_posts('profile'));
+};
+
 function build_posts(post_view){
   
   fetch(`/build_posts/${post_view}`)
@@ -200,7 +201,6 @@ function build_posts(post_view){
       if(post_view == "following"){
         document.querySelector('#posts-view').style.display = 'none';
         document.querySelector('#new-post-view').style.display = 'none';
-        document.querySelector('#profile-view').style.display = 'none';
         document.querySelector('#following-view').style.display = 'block';
         document.querySelector('#single-post-view').style.display = 'none';
         document.querySelector('#following-users-view').style.display = 'none';
@@ -227,16 +227,15 @@ function build_posts(post_view){
         document.querySelector('#profile-view').append(post_likes);
       }
       else {
-        document.querySelector('#other-users-profile-view').style.display = 'none';
-        document.querySelector('#posts-view').style.display = 'block';
-        document.querySelector('#new-post-view').style.display = 'none';
-        document.querySelector('#profile-view').style.display = 'none';
-        document.querySelector('#following-view').style.display = 'none';
-        document.querySelector('#single-post-view').style.display = 'none';
-        document.querySelector('#posts-view').append(post_author_username);
-        document.querySelector('#posts-view').append(post_content);
-        document.querySelector('#posts-view').append(post_time);
-        document.querySelector('#posts-view').append(post_likes);
+        //document.querySelector('#other-users-profile-view').style.display = 'none';
+        // document.querySelector('#posts-view').style.display = 'block';
+        // document.querySelector('#new-post-view').style.display = 'none';
+        // document.querySelector('#following-view').style.display = 'none';
+        // document.querySelector('#single-post-view').style.display = 'none';
+        // document.querySelector('#posts-view').append(post_author_username);
+        // document.querySelector('#posts-view').append(post_content);
+        // document.querySelector('#posts-view').append(post_time);
+        // document.querySelector('#posts-view').append(post_likes);
       }
     });
   });
