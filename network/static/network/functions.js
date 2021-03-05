@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
 
-  document.querySelector('#profile-page').addEventListener('click', () => load_profile());
+  document.querySelector('#profile-page').addEventListener('click', () => build_posts('profile'));
   document.querySelector('#all-posts').addEventListener('click', () => build_posts('all_posts'));
   document.querySelector('#following').addEventListener('click', () => build_posts('following'));
   document.querySelector('#new-post').addEventListener('click', compose_new_post);
@@ -64,6 +64,7 @@ function compose_new_post() {
   // Show compose view and hide other views
   document.querySelector('#posts-view').style.display = 'none';
   document.querySelector('#following-view').style.display = 'none';
+  document.querySelector('#following-users-view').style.display = 'none';
   document.querySelector('#new-post-view').style.display = 'block';
   document.querySelector('#other-users-profile-view').style.display = 'none';
   document.querySelector('#single-post-view').style.display = 'none';
@@ -169,9 +170,15 @@ fetch(`/other_users_profile/${id}`)
 
 };
 
-function load_profile(){
-  document.addEventListener('DOMContentLoaded', () => build_posts('profile'));
-};
+//
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('button').forEach(button => {
+    button.onclick = function() {
+      const page = this.dataset.page;
+      history.pushState({page: page}, "",`${page}`);
+    }
+  })
+});
 
 function build_posts(post_view){
   
@@ -204,6 +211,8 @@ function build_posts(post_view){
         document.querySelector('#following-view').style.display = 'block';
         document.querySelector('#single-post-view').style.display = 'none';
         document.querySelector('#following-users-view').style.display = 'none';
+        document.querySelector('#profile-view').style.display = 'none';
+
         document.querySelector('#other-users-profile-view').style.display = 'none';
         document.querySelector('#following-view').append(post_author_username);
         document.querySelector('#following-view').append(post_content);
@@ -211,6 +220,7 @@ function build_posts(post_view){
         document.querySelector('#following-view').append(post_likes);
       }
       else if(post_view == "profile"){
+
         document.querySelector('#posts-view').style.display = 'none';
         document.querySelector('#follow-button-view').style.display = 'none';
         document.querySelector('#new-post-view').style.display = 'none';
@@ -225,17 +235,19 @@ function build_posts(post_view){
         document.querySelector('#profile-view').append(post_content);
         document.querySelector('#profile-view').append(post_time);
         document.querySelector('#profile-view').append(post_likes);
+
       }
       else {
-        //document.querySelector('#other-users-profile-view').style.display = 'none';
-        // document.querySelector('#posts-view').style.display = 'block';
-        // document.querySelector('#new-post-view').style.display = 'none';
-        // document.querySelector('#following-view').style.display = 'none';
-        // document.querySelector('#single-post-view').style.display = 'none';
-        // document.querySelector('#posts-view').append(post_author_username);
-        // document.querySelector('#posts-view').append(post_content);
-        // document.querySelector('#posts-view').append(post_time);
-        // document.querySelector('#posts-view').append(post_likes);
+        document.querySelector('#other-users-profile-view').style.display = 'none';
+        document.querySelector('#posts-view').style.display = 'block';
+        document.querySelector('#new-post-view').style.display = 'none';
+        document.querySelector('#following-view').style.display = 'none';
+        document.querySelector('#single-post-view').style.display = 'none';
+        document.querySelector('#profile-view').style.display = 'none';
+        document.querySelector('#posts-view').append(post_author_username);
+        document.querySelector('#posts-view').append(post_content);
+        document.querySelector('#posts-view').append(post_time);
+        document.querySelector('#posts-view').append(post_likes);
       }
     });
   });

@@ -18,28 +18,28 @@
               <ul class="navbar-nav mr-auto">
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a id="profile-page" class="nav-link" href="{% url 'profile' user.username %}"><strong>{{ user.username }}</strong></a>
+                        <button data-page="profile" id="profile-page" class="btn btn-primary"><strong>{{ user.username }}</strong></button>
                     </li>
                     <li class="nav-item">
-                        <a id="new-post" class="nav-link" href="#"> New Post</a>
+                        <button data-page="new-post" id="new-post" class="btn btn-primary"> New Post</button>
                     </li>
                 {% endif %}
                 <li class="nav-item">
-                  <a id="all-posts" class="nav-link" href="{% url 'index' %}">All Posts</a>
+                  <a id="all-posts" class="btn btn-primary" href="{% url 'index' %}">All Posts</a>
                 </li>
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a id="following" class="nav-link" href="#">Following</a>
+                        <button data-page="following" id="following" class="btn btn-primary">Following</button>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
+                        <button class="btn btn-primary" href="{% url 'logout' %}">Log Out</button>
                     </li>
                 {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Log In</a>
+                        <button class="btn btn-primary" href="{% url 'login' %}">Log In</button>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'register' %}">Register</a>
+                        <button class="btn btn-primary" href="{% url 'register' %}">Register</button>
                     </li>
                 {% endif %}
               </ul>
