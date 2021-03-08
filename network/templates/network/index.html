@@ -13,12 +13,12 @@
 </div>
 
 <div id="single-post-view">
-    <div id="like-button-view">
+    {% if post.user != user %}
         <form action ="" id="like" method="POST">
             {% csrf_token %}
             <button type="submit" value="Like" class="btn btn-primary"> Like </button>
         </form>
-    </div>
+    {% endif %}
 </div>
 
 <div id="other-users-profile-view">

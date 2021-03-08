@@ -30,7 +30,12 @@ class CreateNewPost(ModelForm):
 
 def index(request):
     if request.user.is_authenticated:
-        return render(request, "network/index.html")
+        user = User.objects.get(username=request.user)
+        post = Post.objects.all()
+        return render(request, "network/index.html", {
+            "post": post,
+            "user": user
+        })
 
     # Everyone else is prompted to sign in
     else:
