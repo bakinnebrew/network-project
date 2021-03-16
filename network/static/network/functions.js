@@ -3,16 +3,6 @@ window.onpopstate = function(event) {
   build_posts(event.state.page)
 }
 
-//  //logic that constructs URL based on buttojn click and data-name attribute
-//  document.addEventListener('DOMContentLoaded', function() {
-//   document.querySelector('button').forEach(button => {
-//     button.onclick = function() {
-//       const page = this.dataset.page;
-//       const name = this.dataset.name;
-//       history.pushState({page: page, name: name}, "",`${page}/${name}`);
-//     }
-//   });
-// });
 
 document.addEventListener('DOMContentLoaded', function() {
 
